@@ -44,7 +44,7 @@ export default function ProductDetails() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <img
-        src={`http://localhost:5001${product.image}`} 
+        src={`https://ecommerce-backend-e7ql.onrender.com${product.image}`} 
         alt={product.title}
         className="w-full h-40 object-contain bg-white rounded"
       />

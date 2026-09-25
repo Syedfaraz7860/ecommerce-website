@@ -60,7 +60,7 @@ export default function Cart() {
                 
                 {/* ✅ IMAGE FIX */}
                 <img
-                  src={`http://localhost:5001${item.productId.image}`}
+                  src={`https://ecommerce-backend-e7ql.onrender.com${item.productId.image}`}
                   alt={item.productId.title}
                   className="w-16 h-16 object-cover rounded"
                 />
