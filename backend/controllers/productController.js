@@ -11,7 +11,7 @@ export const createProduct = async (req, res) => {
       title,
       price,
       category,
-      image: req.file ? `/uploads/${req.file.filename}` : "",
+      image: req.file ? req.file.path : "",
     });
 
     await product.save();

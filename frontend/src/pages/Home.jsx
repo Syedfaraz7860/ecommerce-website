@@ -7,13 +7,27 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
 
-  // ✅ Load products with error handling
+  // Image URL helper
+  const getImageUrl = (image) => {
+    if (!image) return "";
+
+    // Cloudinary image
+    if (image.startsWith("http")) {
+      return image;
+    }
+
+    // Old /uploads image
+    return `https://ecommerce-backend-e7ql.onrender.com${image}`;
+  };
+
+  // Load products
   const loadProducts = async () => {
     try {
       const res = await api.get(
         `/products?search=${search}&category=${category}`
       );
-      console.log(res.data); // 👈 debug
+
+      console.log(res.data);
       setProducts(res.data);
     } catch (error) {
       console.error("Error loading products:", error);
@@ -24,7 +38,7 @@ export default function Home() {
     loadProducts();
   }, [search, category]);
 
-  // ✅ Add to cart safe version
+  // Add to cart
   const addToCart = async (productId) => {
     const userId = localStorage.getItem("userId");
 
@@ -34,7 +48,10 @@ export default function Home() {
     }
 
     try {
-      const res = await api.post(`/cart/add`, { userId, productId });
+      const res = await api.post(`/cart/add`, {
+        userId,
+        productId,
+      });
 
       const total = res.data.cart.items.reduce(
         (sum, item) =>
@@ -53,7 +70,6 @@ export default function Home() {
     <div className="p-6">
       {/* Search + Filter */}
       <div className="mb-6 flex flex-col md:flex-row gap-4 items-center bg-white p-4 rounded-lg shadow-sm">
-        
         <input
           type="text"
           placeholder="Search products..."
@@ -88,10 +104,8 @@ export default function Home() {
             className="border p-3 rounded shadow hover:shadow-lg transition"
           >
             <Link to={`/product/${product._id}`}>
-              
-             
               <img
-                src={`https://ecommerce-backend-e7ql.onrender.com${product.image}`}
+                src={getImageUrl(product.image)}
                 alt={product.title}
                 className="w-full h-40 object-contain bg-white rounded"
               />

@@ -6,35 +6,59 @@ export default function ProductDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
 
+  // Image URL helper
+  const getImageUrl = (image) => {
+    if (!image) return "";
+
+    // Cloudinary image
+    if (image.startsWith("http")) {
+      return image;
+    }
+
+    // Old /uploads image
+    return `https://ecommerce-backend-e7ql.onrender.com${image}`;
+  };
+
   const loadProduct = async () => {
-    const res = await api.get("/products/");
-    const p = res.data.find((item) => item._id === id);
-    setProduct(p);
+    try {
+      const res = await api.get("/products/");
+      const p = res.data.find((item) => item._id === id);
+      setProduct(p);
+    } catch (error) {
+      console.error("Error loading product:", error);
+    }
   };
 
   useEffect(() => {
     loadProduct();
-  }, []);
+  }, [id]);
 
   const addToCart = async () => {
     const userId = localStorage.getItem("userId");
+
     if (!userId) {
       alert("Please login first");
       return;
     }
 
-    const res = await api.post("/cart/add", {
-      userId,
-      productId: product._id,
-    });
+    try {
+      const res = await api.post("/cart/add", {
+        userId,
+        productId: product._id,
+      });
 
-    const total = res.data.cart.items.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    );
+      const total = res.data.cart.items.reduce(
+        (sum, item) => sum + item.quantity,
+        0
+      );
 
-    localStorage.setItem("cartCount", total);
-    window.dispatchEvent(new Event("cartUpdated"));
+      localStorage.setItem("cartCount", total);
+      window.dispatchEvent(new Event("cartUpdated"));
+
+      alert("Product added to cart");
+    } catch (error) {
+      console.error("Cart error:", error);
+    }
   };
 
   if (!product) {
@@ -44,13 +68,22 @@ export default function ProductDetails() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <img
-        src={`https://ecommerce-backend-e7ql.onrender.com${product.image}`} 
+        src={getImageUrl(product.image)}
         alt={product.title}
-        className="w-full h-40 object-contain bg-white rounded"
+        className="w-full h-80 object-contain bg-white rounded"
       />
-      <h1 className="text-2xl font-bold mt-4">{product.title}</h1>
-      <p className="text-gray-700 mt-2">{product.description}</p>
-      <p className="text-xl font-semibold mt-4">₹{product.price}</p>
+
+      <h1 className="text-2xl font-bold mt-4">
+        {product.title}
+      </h1>
+
+      <p className="text-gray-700 mt-2">
+        {product.description}
+      </p>
+
+      <p className="text-xl font-semibold mt-4">
+        ₹{product.price}
+      </p>
 
       <button
         onClick={addToCart}

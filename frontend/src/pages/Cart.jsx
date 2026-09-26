@@ -7,10 +7,28 @@ export default function Cart() {
   const [cart, setCart] = useState(null);
   const navigate = useNavigate();
 
+  // Image URL helper
+  const getImageUrl = (image) => {
+    if (!image) return "";
+
+    // Cloudinary image
+    if (image.startsWith("http")) {
+      return image;
+    }
+
+    // Old /uploads image
+    return `https://ecommerce-backend-e7ql.onrender.com${image}`;
+  };
+
   const loadCart = async () => {
     if (!userId) return;
-    const res = await api.get(`/cart/${userId}`);
-    setCart(res.data);
+
+    try {
+      const res = await api.get(`/cart/${userId}`);
+      setCart(res.data);
+    } catch (error) {
+      console.error("Cart loading error:", error);
+    }
   };
 
   useEffect(() => {
@@ -18,9 +36,13 @@ export default function Cart() {
   }, []);
 
   const removeItem = async (productId) => {
-    await api.post(`/cart/remove`, { userId, productId });
-    loadCart();
-    window.dispatchEvent(new Event("cartUpdated"));
+    try {
+      await api.post(`/cart/remove`, { userId, productId });
+      loadCart();
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (error) {
+      console.error("Remove error:", error);
+    }
   };
 
   const updateQty = async (productId, quantity) => {
@@ -29,9 +51,18 @@ export default function Cart() {
       return;
     }
 
-    await api.post(`/cart/update`, { userId, productId, quantity });
-    loadCart();
-    window.dispatchEvent(new Event("cartUpdated"));
+    try {
+      await api.post(`/cart/update`, {
+        userId,
+        productId,
+        quantity,
+      });
+
+      loadCart();
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (error) {
+      console.error("Update quantity error:", error);
+    }
   };
 
   if (!cart) {
@@ -39,13 +70,16 @@ export default function Cart() {
   }
 
   const total = cart.items.reduce(
-    (sum, item) => sum + item.productId.price * item.quantity,
+    (sum, item) =>
+      sum + item.productId.price * item.quantity,
     0
   );
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        Your Cart
+      </h1>
 
       {cart.items.length === 0 ? (
         <div>Your cart is empty.</div>
@@ -57,10 +91,10 @@ export default function Cart() {
               className="flex items-center justify-between p-4 border rounded"
             >
               <div className="flex items-center gap-4">
-                
-                {/* ✅ IMAGE FIX */}
+
+                {/* Product Image */}
                 <img
-                  src={`https://ecommerce-backend-e7ql.onrender.com${item.productId.image}`}
+                  src={getImageUrl(item.productId.image)}
                   alt={item.productId.title}
                   className="w-16 h-16 object-cover rounded"
                 />
@@ -70,17 +104,20 @@ export default function Cart() {
                     {item.productId.title}
                   </h2>
 
-                  {/* ✅ PRICE FIX */}
                   <p className="text-gray-600">
                     ₹{item.productId.price.toFixed(2)}
                   </p>
                 </div>
               </div>
 
+              {/* Quantity */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() =>
-                    updateQty(item.productId._id, item.quantity - 1)
+                    updateQty(
+                      item.productId._id,
+                      item.quantity - 1
+                    )
                   }
                   className="px-2 py-1 bg-gray-200 rounded"
                 >
@@ -91,7 +128,10 @@ export default function Cart() {
 
                 <button
                   onClick={() =>
-                    updateQty(item.productId._id, item.quantity + 1)
+                    updateQty(
+                      item.productId._id,
+                      item.quantity + 1
+                    )
                   }
                   className="px-2 py-1 bg-gray-200 rounded"
                 >
@@ -99,15 +139,22 @@ export default function Cart() {
                 </button>
               </div>
 
+              {/* Item Total */}
               <div>
-                {/* ✅ ITEM TOTAL FIX */}
                 <p className="font-semibold">
-                  ₹{(item.productId.price * item.quantity).toFixed(2)}
+                  ₹
+                  {(
+                    item.productId.price *
+                    item.quantity
+                  ).toFixed(2)}
                 </p>
               </div>
 
+              {/* Remove */}
               <button
-                onClick={() => removeItem(item.productId._id)}
+                onClick={() =>
+                  removeItem(item.productId._id)
+                }
                 className="text-red-500"
               >
                 Remove
@@ -115,15 +162,18 @@ export default function Cart() {
             </div>
           ))}
 
+          {/* Cart Total */}
           <div className="text-right mt-4">
-            {/* ✅ TOTAL FIX */}
             <h2 className="text-xl font-bold">
               Total: ₹{total.toFixed(2)}
             </h2>
           </div>
 
+          {/* Checkout */}
           <button
-            onClick={() => navigate("/checkout-address")}
+            onClick={() =>
+              navigate("/checkout-address")
+            }
             className="w-full bg-blue-500 text-white p-2 rounded"
           >
             Proceed to Checkout

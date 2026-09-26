@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -9,7 +10,7 @@ import addressRoutes from './routes/address.js';
 import orderRoutes from './routes/order.js';
 import path from "path";
 
-dotenv.config();
+// dotenv.config();
 
 const app = express();
 
